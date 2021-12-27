@@ -1,47 +1,43 @@
-import { IsEmail, Length } from "class-validator";
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, Index, CreateDateColumn, UpdateDateColumn, BeforeInsert } from "typeorm";
-import bcrypt from  "bcrypt";
-import { classToPlain, Exclude } from "class-transformer";
+import { IsEmail, Length } from 'class-validator'
+import {
+  Entity as TOEntity,
+  Column,
+  BeforeInsert,
+  OneToMany,
+} from 'typeorm'
+import bcrypt from 'bcrypt'
+import { Exclude } from 'class-transformer'
 
-@Entity('users')
-export class User extends BaseEntity {
-    constructor(user: Partial<User>) {
-        super();
-        Object.assign(this, user);
-    };
-    
-    @Exclude()
-    @PrimaryGeneratedColumn()
-    id: number;
+import Entity from './Entity'
+import Post from './Post'
 
-    @Index()
-    @IsEmail()
-    @Column({ unique: true })
-    email: string;
+@TOEntity('users')
+export default class User extends Entity {
+  constructor(user: Partial<User>) {
+    super()
+    Object.assign(this, user)
+  }
 
-    @Index()
-    @Length(3, 255)
-    @Column({ unique: true })
-    username: string;
-        
-    @Exclude()
-    @Length(6, 255)
-    @Column()
-    password: string;
+  // @Index()
+  @IsEmail()
+  @Column({ unique: true })
+  email: string
 
-    @CreateDateColumn()
-    createdAt: Date;
+  // @Index()
+  @Length(3, 255, { message: 'Username must be at least 3 characters long' })
+  @Column({ unique: true })
+  username: string
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @Exclude()
+  @Column()
+  @Length(6, 255)
+  password: string
 
-    @BeforeInsert()
-    async hashPassword() {
-      this.password = await bcrypt.hash(this.password, 6);
-    };
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[]
 
-    toJSON() {
-        return classToPlain(this)
-    };
-
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 6)
+  }
 }
