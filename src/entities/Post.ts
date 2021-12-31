@@ -6,15 +6,17 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-} from 'typeorm';
+  AfterLoad,
+} from "typeorm";
+import { Expose } from "class-transformer";
 
-import Entity from './Entity';
-import User from './User';
-import { makeId, slugify } from '../util/helpers';
-import Sub from './Sub';
-import Comment from './Comment';
+import Entity from "./Entity";
+import User from "./User";
+import { makeId, slugify } from "../util/helpers";
+import Sub from "./Sub";
+import Comment from "./Comment";
 
-@TOEntity('posts')
+@TOEntity("posts")
 export default class Post extends Entity {
   constructor(post: Partial<Post>) {
     super();
@@ -32,22 +34,35 @@ export default class Post extends Entity {
   @Column()
   slug: string;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ nullable: true, type: "text" })
   body: string;
 
   @Column()
   subName: string;
 
+  @Column()
+  username: string;
+
   @ManyToOne(() => User, (user) => user.posts)
-  @JoinColumn({ name: 'username', referencedColumnName: 'username' })
+  @JoinColumn({ name: "username", referencedColumnName: "username" })
   user: User;
 
   @ManyToOne(() => Sub, (sub) => sub.posts)
-  @JoinColumn({ name: 'subName', referencedColumnName: 'name' })
+  @JoinColumn({ name: "subName", referencedColumnName: "name" })
   sub: Sub;
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @Expose() get url(): string {
+    return `/r/${this.subName}/${this.identifier}/${this.slug}`;
+  }
+
+  // protected url: string;
+  // @AfterLoad()
+  // createFields() {
+  //   this.url = `/r/${this.subName}/${this.identifier}/${this.slug}`;
+  // }
 
   @BeforeInsert()
   makeIdAndSlug() {
