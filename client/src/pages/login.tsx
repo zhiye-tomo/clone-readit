@@ -4,6 +4,8 @@ import Link from "next/link";
 import Axios from "axios";
 import { useRouter } from "next/router";
 
+import { useAuthDispatch } from "../context/auth";
+
 import { InputGroup } from "../components/InputGroup";
 
 interface Errors {
@@ -18,12 +20,14 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Errors>>({});
 
+  const dispatch = useAuthDispatch();
+
   const router = useRouter();
 
   const submitForm = async (event: FormEvent) => {
     event.preventDefault();
     try {
-      await Axios.post(
+      const res = await Axios.post(
         "/auth/login",
         {
           username,
@@ -31,6 +35,8 @@ export default function Register() {
         },
         { withCredentials: true }
       );
+
+      dispatch({ type: "LOGIN", payload: res.data });
 
       router.push("/");
     } catch (err) {
