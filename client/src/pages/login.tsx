@@ -4,7 +4,7 @@ import Link from "next/link";
 import Axios from "axios";
 import { useRouter } from "next/router";
 
-import { useAuthDispatch } from "../context/auth";
+import { useAuthDispatch, useAuthState } from "../context/auth";
 
 import { InputGroup } from "../components/InputGroup";
 
@@ -21,8 +21,10 @@ export default function Register() {
   const [errors, setErrors] = useState<Partial<Errors>>({});
 
   const dispatch = useAuthDispatch();
+  const { authenticated } = useAuthState();
 
   const router = useRouter();
+  if (authenticated) router.push("/");
 
   const submitForm = async (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +38,7 @@ export default function Register() {
         { withCredentials: true }
       );
 
-      dispatch({ type: "LOGIN", payload: res.data });
+      dispatch("LOGIN", res.data);
 
       router.push("/");
     } catch (err) {
